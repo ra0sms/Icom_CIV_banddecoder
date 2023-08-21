@@ -1,0 +1,12 @@
+../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_tim.h:4265:22:LL_TIM_ClearFlag_UPDATE	16	static
+../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_tim.h:4276:26:LL_TIM_IsActiveFlag_UPDATE	16	static
+../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_usart.h:2992:26:LL_USART_IsActiveFlag_RXNE_RXFNE	16	static
+../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_usart.h:4253:25:LL_USART_ReceiveData8	16	static
+../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_gpio.h:915:22:LL_GPIO_TogglePin	24	static
+../Core/Src/stm32g0xx_it.c:73:6:NMI_Handler	8	static
+../Core/Src/stm32g0xx_it.c:88:6:HardFault_Handler	8	static
+../Core/Src/stm32g0xx_it.c:103:6:SVC_Handler	8	static
+../Core/Src/stm32g0xx_it.c:116:6:PendSV_Handler	8	static
+../Core/Src/stm32g0xx_it.c:129:6:SysTick_Handler	8	static
+../Core/Src/stm32g0xx_it.c:150:6:TIM14_IRQHandler	8	static
+../Core/Src/stm32g0xx_it.c:167:6:USART1_IRQHandler	24	static
