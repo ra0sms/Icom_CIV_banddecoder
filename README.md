@@ -24,6 +24,19 @@ The device allows you to switch external switches depending on the band selected
 
 **CI-V**: input and output for CAT system to/from Icom. They are the same.
 
+| Output | Frequency range, kHz |
+| ------ | -------------------- |
+| 160    | 1000 - 2999          |
+| 80     | 3000 - 4999          |
+| 40     | 7000 - 7999          |
+| 30     | 10000 - 10999        |
+| 20     | 14000 - 14999        |
+| 17     | 18000 - 18999        |
+| 15     | 21000 - 21999        |
+| 12     | 24000 - 24999        |
+| 10     | 28000 - 29999        |
+| 6      | 50000 - 50999        |
+
 ![](pics/1.jpg)
 
 ![](pics/2.jpg)
