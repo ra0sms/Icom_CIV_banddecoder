@@ -1,5 +1,7 @@
 # ICOM CI-V BandDecoder
 
+Full description - https://ra0sms.com/icom-civ-bandecoder/
+
 The device allows you to switch external switches depending on the band selected in the transceiver. The unit also has separate relay outputs that are activated when CW or PHONE modulation is selected. The STOP button stops any switching, it must be latching.
 
 ![](DipTrace/Icom_BD_sch.jpg)
