@@ -179,7 +179,7 @@ void USART1_IRQHandler(void) {
 			TRXData[i] = 0xFD;
 			i = 0;
 			if ((TRXData[0] == 0xFE) && (TRXData[1] == 0xFE)
-					&& (TRXData[4] == 0x00)) {
+					&& ((TRXData[4] == 0x00)||(TRXData[4] == 0x03))) {
 				if ((TRXData[8] == 0x01) || (TRXData[8] == 0x02))
 					flag_band = 160; //160m 1000-2999 kHz
 				if ((TRXData[8] == 0x03) || (TRXData[8] == 0x04))
@@ -204,14 +204,14 @@ void USART1_IRQHandler(void) {
 					flag_band = 6; //6m 50000-50999 kHz
 			}
 			if ((TRXData[0] == 0xFE) && (TRXData[1] == 0xFE)
-					&& (TRXData[4] == 0x01)) {
+					&& ((TRXData[4] == 0x01)||(TRXData[4] == 0x04))) {
 				if ((TRXData[5] == 0x03))
 					flag_mode = 'C';		//CW
 				if ((TRXData[5] == 0x00) || (TRXData[5] == 0x01)
 						|| (TRXData[5] == 0x02) || (TRXData[5] == 0x05)
 						|| (TRXData[5] == 0x06))
 					flag_mode = 'P';		//Phone
-			} else flag_mode=0;
+			} /*else flag_mode=0;*/
 
 		}
 
