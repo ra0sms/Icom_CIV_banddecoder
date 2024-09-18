@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (11.3.rel1)
+# Toolchain: GNU Tools for STM32 (12.3.rel1)
 ################################################################################
 
 -include ../makefile.init
@@ -66,8 +66,8 @@ all: main-build
 main-build: Icom_BD.elf secondary-outputs
 
 # Tool invocations
-Icom_BD.elf Icom_BD.map: $(OBJS) $(USER_OBJS) C:\Users\ra0sms\Documents\stm32\stm32g030\Icom_banddecoder\code\STM32G030K8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Icom_BD.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\ra0sms\Documents\stm32\stm32g030\Icom_banddecoder\code\STM32G030K8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Icom_BD.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Icom_BD.elf Icom_BD.map: $(OBJS) $(USER_OBJS) /home/ra0sms/stm32/stm32g030/Icom_banddecoder/code/STM32G030K8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Icom_BD.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"/home/ra0sms/stm32/stm32g030/Icom_banddecoder/code/STM32G030K8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Icom_BD.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

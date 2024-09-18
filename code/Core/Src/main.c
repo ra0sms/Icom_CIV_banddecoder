@@ -230,7 +230,7 @@ int main(void)
 			SetOut();
 			SetMode();
 		}
-		LL_mDelay(10);
+		LL_mDelay(400);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -368,7 +368,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
-  USART_InitStruct.BaudRate = 19200;
+  USART_InitStruct.BaudRate = 9600;
   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
   USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
   USART_InitStruct.Parity = LL_USART_PARITY_NONE;
