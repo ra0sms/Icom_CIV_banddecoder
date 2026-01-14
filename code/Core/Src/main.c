@@ -21,7 +21,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-uint8_t TRXData[15];
 int flag_band=0;
 char flag_mode=0;
 
@@ -165,6 +164,58 @@ void SetOut(void) {
 
 }
 
+void SetOut_UN3M(void) {
+	if (flag_band == 160) {
+		SetLed(1);
+		SetBand(1);
+	}
+	if (flag_band == 80) {
+		SetLed(2);
+		SetBand(2);
+	}
+	if (flag_band == 40) {
+		SetLed(3);
+		SetBand(3);
+	}
+	if (flag_band == 30) {
+		SetLed(4);
+		SetBand(4);
+	}
+	if (flag_band == 20) {
+		SetLed(5);
+		SetBand(5);
+	}
+	if (flag_band == 17) {
+		SetLed(6);
+		SetBand(6);
+	}
+	if (flag_band == 15) {
+		SetLed(7);
+		SetBand(7);
+	}
+	if (flag_band == 12) {
+		SetLed(8);
+		SetBand(8);
+	}
+	if (flag_band == 10) {
+		SetLed(7);
+		SetBand(7);
+	}
+	if (flag_band == 6) {
+		SetLed(10);
+		SetBand(10);
+	}
+	if (flag_band == 60) {
+			SetLed(9);
+			SetBand(9);
+		}
+	if (flag_band == 0) {
+		ResetLeds();
+		ResetOuts();
+	}
+
+}
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -223,11 +274,11 @@ int main(void)
   LL_USART_EnableIT_RXNE(USART1);
   /* USER CODE END 2 */
 
-  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
 		if (LL_GPIO_IsInputPinSet(BTN_STOP_GPIO_Port, BTN_STOP_Pin) == 1) {
 			SetOut();
+			//SetOut_UN3M();
 			SetMode();
 		}
 		LL_mDelay(400);
@@ -368,7 +419,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
-  USART_InitStruct.BaudRate = 9600;
+  USART_InitStruct.BaudRate = 19200;
   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
   USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
   USART_InitStruct.Parity = LL_USART_PARITY_NONE;
