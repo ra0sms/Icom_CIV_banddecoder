@@ -14,6 +14,7 @@ from PyQt5.QtGui import QColor
 # ===== КОНСТАНТЫ =====
 ROW_COUNT = 19
 BANDS = [160, 80, 40, 30, 20, 17, 15, 12, 10, 6]
+BAUD_RATES = [19200, 9600]  # доступные скорости
 
 CMD_START = 0xAA
 CMD_END   = 0x55
@@ -45,24 +46,37 @@ class BandEditor(QWidget):
         layout.setContentsMargins(10, 10, 10, 10)   # padding окна
         layout.setSpacing(8)
 
-        # ===== COM =====
-        com_layout = QHBoxLayout()
-        com_layout.setSpacing(6)
+        # ===== COM PANEL =====
+        com_panel = QHBoxLayout()
+        com_panel.setSpacing(6)
 
-        com_layout.addWidget(QLabel("COM:"))
+        com_panel.addWidget(QLabel("COM:"))
 
         self.com_box = QComboBox()
         self.com_box.setMinimumWidth(120)
-        com_layout.addWidget(self.com_box)
+        com_panel.addWidget(self.com_box)
 
         btn_refresh = QPushButton("↻")
         btn_refresh.setFixedWidth(40)
         btn_refresh.clicked.connect(self.refresh_ports)
-        com_layout.addWidget(btn_refresh)
+        com_panel.addWidget(btn_refresh)
 
-        com_layout.addStretch()
+        # разделитель
+        com_panel.addSpacing(20)
 
-        layout.addLayout(com_layout)
+        # выбор скорости
+        com_panel.addWidget(QLabel("Speed:"))
+
+        self.baud_box = QComboBox()
+        self.baud_box.setMinimumWidth(80)
+        for rate in BAUD_RATES:
+            self.baud_box.addItem(str(rate), rate)
+        self.baud_box.setCurrentIndex(0)  # 19200 по умолчанию
+        com_panel.addWidget(self.baud_box)
+
+        com_panel.addStretch()
+
+        layout.addLayout(com_panel)
 
         # ===== TABLE =====
         self.table = QTableWidget(ROW_COUNT, 4)
@@ -147,13 +161,14 @@ class BandEditor(QWidget):
     # ===== SEND =====
     def send_data(self):
         port = self.com_box.currentText()
+        baud_rate = self.baud_box.currentData()
 
         if not port:
             QMessageBox.warning(self, "Error", "No COM port")
             return
 
         try:
-            ser = serial.Serial(port, 19200, timeout=1)
+            ser = serial.Serial(port, baud_rate, timeout=1)
         except Exception as e:
             QMessageBox.warning(self, "Error", str(e))
             return
@@ -190,11 +205,11 @@ class BandEditor(QWidget):
             # END
             packet.append(CMD_END)
 
-            print("SEND:", packet.hex())
+            print(f"SEND (baud={baud_rate}):", packet.hex())
 
             ser.write(packet)
 
-            QMessageBox.information(self, "OK", "Data sent")
+            QMessageBox.information(self, "OK", f"Data sent at {baud_rate} baud")
 
         except Exception as e:
             QMessageBox.warning(self, "Error", str(e))
