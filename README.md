@@ -43,3 +43,19 @@ The device allows you to switch external switches depending on the band selected
 
 ![](pics/2.jpg)
 
+## GUI for correction a band plan
+
+Now available a new firmware for changing band plan. The new firmware you can download here:
+
+[Firmware for 9600 kb/s](code/Debug/Icom_BD_9600_gui_latest.hex)
+
+[Firmware for 19200 kb/s](code/Debug/Icom_BD_19200_gui_latest.hex)
+
+[GUI software for Windows](gui/gui/zip)
+
+![](pics/gui_icom_banddecoder.png)
+
+
+
+
+
