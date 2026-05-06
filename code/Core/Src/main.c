@@ -21,6 +21,59 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "flash_storage.h"
+#include "band_rules.h"
+#include <string.h>
+
+#define BAUD_RATE 9600
+
+
+extern uint8_t cmd_buffer[256];
+extern uint16_t cmd_index;
+extern uint8_t cmd_ready;
+
+
+// ===== ТАБЛИЦА ДИАПАЗОНОВ (кГц) =====
+// верхняя граница НЕ включается
+// нижняя граница включается
+// C - CW
+// P - PHONE
+const band_rule_t band_rules_default[] = {
+
+    {1800, 1840, 160, 'C'},
+    {1840, 2000, 160, 'P'},
+
+    {3500, 3600, 80, 'C'},
+    {3600, 3800, 80, 'P'},
+
+    {7000, 7050, 40, 'C'},
+    {7050, 7200, 40, 'P'},
+
+    {10100, 10150, 30, 'C'},
+
+    {14000, 14110, 20, 'C'},
+    {14110, 14350, 20, 'P'},
+
+    {18068, 18110, 17, 'C'},
+    {18110, 18168, 17, 'P'},
+
+    {21000, 21110, 15, 'C'},
+    {21110, 21450, 15, 'P'},
+
+    {24890, 24920, 12, 'C'},
+    {24920, 24990, 12, 'P'},
+
+    {28000, 28300, 10, 'C'},
+    {28300, 30000, 10, 'P'},
+
+    {50000, 50200, 6, 'C'},
+    {50200, 54000, 6, 'P'},
+};
+
+extern band_rule_t band_rules[];
+extern uint8_t rules_count;
+
+
 int flag_band=0;
 char flag_mode=0;
 
@@ -38,6 +91,92 @@ char flag_mode=0;
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
+void led_blink_blocking(uint8_t times)
+{
+    for (uint8_t i = 0; i < times; i++) {
+
+        LL_GPIO_SetOutputPin(LED_CW_GPIO_Port, LED_CW_Pin);
+        HAL_Delay(100);
+
+        LL_GPIO_ResetOutputPin(LED_CW_GPIO_Port, LED_CW_Pin);
+        HAL_Delay(100);
+    }
+}
+
+void process_uart_command(void)
+{
+    if (!cmd_ready) return;
+
+    cmd_ready = 0;
+    if (cmd_index < 4) {
+        cmd_index = 0;
+        led_blink_blocking(4);
+        return;
+    }
+    if (cmd_buffer[0] != 0xAA) {
+        cmd_index = 0;
+        led_blink_blocking(4);
+        return;
+    }
+    uint8_t count = cmd_buffer[1];
+    if (count == 0 || count > MAX_RULES) {
+        cmd_index = 0;
+        led_blink_blocking(4);
+        return;
+    }
+    uint16_t expected_size = 2 + count * 10 + 2;
+    if (cmd_index != expected_size) {
+        cmd_index = 0;
+        led_blink_blocking(4);
+        return;
+    }
+
+    if (cmd_buffer[cmd_index - 1] != 0x55) {
+        cmd_index = 0;
+        led_blink_blocking(4);
+        return;
+    }
+    uint8_t crc = 0;
+    for (uint16_t i = 0; i < cmd_index - 2; i++) {
+        crc ^= cmd_buffer[i];
+    }
+
+    if (crc != cmd_buffer[cmd_index - 2]) {
+        cmd_index = 0;
+        led_blink_blocking(4);
+        return;
+    }
+    band_rule_t new_rules[MAX_RULES];
+
+    uint16_t offset = 2;
+
+    for (uint8_t i = 0; i < count; i++) {
+        new_rules[i].start_khz =
+            (uint32_t)cmd_buffer[offset] |
+            ((uint32_t)cmd_buffer[offset + 1] << 8) |
+            ((uint32_t)cmd_buffer[offset + 2] << 16) |
+            ((uint32_t)cmd_buffer[offset + 3] << 24);
+        offset += 4;
+        new_rules[i].end_khz =
+            (uint32_t)cmd_buffer[offset] |
+            ((uint32_t)cmd_buffer[offset + 1] << 8) |
+            ((uint32_t)cmd_buffer[offset + 2] << 16) |
+            ((uint32_t)cmd_buffer[offset + 3] << 24);
+        offset += 4;
+        new_rules[i].band = cmd_buffer[offset++];
+        new_rules[i].mode = cmd_buffer[offset++];
+    }
+    if (!flash_save_rules(new_rules, count)) {
+        cmd_index = 0;
+        led_blink_blocking(4);
+        return;
+    }
+    memcpy(band_rules, new_rules, count * sizeof(band_rule_t));
+    rules_count = count;
+    led_blink_blocking(2); // if OK
+    cmd_index = 0;
+}
 
 void ResetOuts() {
 	LL_GPIO_ResetOutputPin(BAND1_GPIO_Port, BAND1_Pin);
@@ -269,6 +408,13 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
+  rules_count = flash_load_rules(band_rules, MAX_RULES);
+  if (rules_count == 0) {
+      memcpy(band_rules, band_rules_default, sizeof(band_rules_default));
+      rules_count = sizeof(band_rules_default) / sizeof(band_rules_default[0]);
+
+      flash_save_rules(band_rules, rules_count);
+  }
   LL_TIM_EnableCounter(TIM14);
   LL_TIM_EnableIT_UPDATE(TIM14);
   LL_USART_EnableIT_RXNE(USART1);
@@ -278,10 +424,10 @@ int main(void)
 	while (1) {
 		if (LL_GPIO_IsInputPinSet(BTN_STOP_GPIO_Port, BTN_STOP_Pin) == 1) {
 			SetOut();
-			//SetOut_UN3M();
 			SetMode();
 		}
-		LL_mDelay(400);
+		process_uart_command();
+		LL_mDelay(200);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -419,7 +565,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
-  USART_InitStruct.BaudRate = 19200;
+  USART_InitStruct.BaudRate = BAUD_RATE;
   USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
   USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
   USART_InitStruct.Parity = LL_USART_PARITY_NONE;

@@ -22,8 +22,17 @@
 #include "stm32g0xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+#include "band_rules.h"
+
+volatile uint8_t cmd_buffer[256];
+volatile uint16_t cmd_index = 0;
+volatile uint8_t cmd_ready = 0;
+
 extern int flag_band;
 extern char flag_mode;
+extern band_rule_t band_rules[];
+extern uint8_t rules_count;
 
 /* USER CODE END Includes */
 
@@ -37,95 +46,100 @@ extern char flag_mode;
 
 #define TRX_BUFFER_SIZE 32
 
-void HF_band_decode(void) {
+void uart_rx_command_handler_byte(uint8_t b)
+{
+    if (cmd_ready) return;
+    if (cmd_index == 0) {
+        if (b != 0xAA) return;
+    }
+    if (cmd_index < sizeof(cmd_buffer)) {
+        cmd_buffer[cmd_index++] = b;
+    } else {
+        cmd_index = 0;
+        return;
+    }
+    if (cmd_index == 2) {
+        uint8_t count = cmd_buffer[1];
+        if (count == 0 || count > MAX_RULES) {
+            cmd_index = 0;
+            return;
+        }
+    }
+    if (cmd_index >= 2) {
+        uint8_t count = cmd_buffer[1];
+        uint16_t expected_size = 2 + count * 10 + 2;
+        if (expected_size > sizeof(cmd_buffer)) {
+            cmd_index = 0;
+            return;
+        }
+        if (cmd_index == expected_size) {
+            if (cmd_buffer[cmd_index - 1] == 0x55) {
+                cmd_ready = 1;
+            } else {
+                cmd_index = 0;
+            }
+        }
+    }
+}
+
+uint32_t get_frequency_khz(uint8_t *data)
+{
+    uint32_t freq = 0;
+
+    for (int i = 9; i >= 5; i--) {
+        uint8_t b = data[i];
+        freq *= 100;
+        freq += ((b >> 4) * 10) + (b & 0x0F);
+    }
+
+    return freq / 1000;
+}
+
+void decode_by_freq(uint32_t freq_khz)
+{
+    flag_band = 0;
+    flag_mode = 0;
+
+    for (uint8_t i = 0; i < rules_count; i++) {
+
+        if (freq_khz >= band_rules[i].start_khz &&
+            freq_khz <  band_rules[i].end_khz) {
+
+            flag_band = band_rules[i].band;
+            flag_mode = band_rules[i].mode;
+            return;
+        }
+    }
+}
+
+
+void HF_band_decode_byte(uint8_t letter)
+{
     static uint8_t i = 0;
     static uint8_t TRXData[TRX_BUFFER_SIZE];
 
-    if (!LL_USART_IsActiveFlag_RXNE(USART1)) {
-        return;
-    }
-    uint8_t letter = LL_USART_ReceiveData8(USART1);
-    if (i == 0 && letter != 0xFE) {
-        return;
-    }
+    if (i == 0 && letter != 0xFE) return;
+
     if (i == 1 && letter != 0xFE) {
         i = 0;
         return;
     }
-    if (i < TRX_BUFFER_SIZE - 1) {
+    if (i < TRX_BUFFER_SIZE) {
         TRXData[i++] = letter;
     } else {
         i = 0;
         return;
     }
     if (letter == 0xFD) {
-        if (i >= 9) {
+        if (i >= 10) {
             if ((TRXData[4] == 0x00 || TRXData[4] == 0x03)) {
-                uint8_t band_code = TRXData[8];
-                if (band_code == 0x01) flag_band = 160;
-                else if (band_code == 0x03) flag_band = 80;
-                else if (band_code == 0x05) flag_band = 60;
-                else if (band_code == 0x07) flag_band = 40;
-                else if (band_code == 0x10) flag_band = 30;
-                else if (band_code == 0x14) flag_band = 20;
-                else if (band_code == 0x18) flag_band = 17;
-                else if (band_code == 0x21) flag_band = 15;
-                else if (band_code == 0x24) flag_band = 12;
-                else if (band_code == 0x28 || band_code == 0x29) flag_band = 10;
-                else if (band_code == 0x50) flag_band = 6;
-            }
-
-            if ((TRXData[4] == 0x01 || TRXData[4] == 0x04)) {
-                uint8_t mode_code = TRXData[5];
-                if (mode_code == 0x03) {
-                    flag_mode = 'C'; // CW
-                } else if (mode_code == 0x00 || mode_code == 0x01 ||
-                           mode_code == 0x02 || mode_code == 0x05 ||
-                           mode_code == 0x06) {
-                    flag_mode = 'P'; // Phone
-                }
+                uint32_t freq_khz = get_frequency_khz(TRXData);
+                decode_by_freq(freq_khz);
             }
         }
+
         i = 0;
     }
-}
-
-void VHF_band_decode() {
-	uint8_t letter;
-	static uint8_t TRXData[TRX_BUFFER_SIZE];
-	static uint8_t i = 0;
-	if (LL_USART_IsActiveFlag_RXNE(USART1)) {
-		letter = LL_USART_ReceiveData8(USART1);
-		if (letter != 0xFD) {
-			TRXData[i] = letter;
-			i++;
-			if (i == 15)
-				i = 0;
-		} else {
-			TRXData[i] = 0xFD;
-			i = 0;
-			if ((TRXData[0] == 0xFE) && (TRXData[1] == 0xFE)
-					&& ((TRXData[4] == 0x00) || (TRXData[4] == 0x03))) {
-				if ((TRXData[9] == 0x01))
-					flag_band = 160; // 100-199 MHz
-				if ((TRXData[9] == 0x04))
-					flag_band = 80; // 400-499MHz
-				if ((TRXData[9] == 0x12))
-					flag_band = 40; //1200-1299MHz
-			}
-			if ((TRXData[0] == 0xFE) && (TRXData[1] == 0xFE)
-					&& ((TRXData[4] == 0x01) || (TRXData[4] == 0x04))) {
-				if ((TRXData[5] == 0x03))
-					flag_mode = 'C';		//CW
-				if ((TRXData[5] == 0x00) || (TRXData[5] == 0x01)
-						|| (TRXData[5] == 0x02) || (TRXData[5] == 0x05)
-						|| (TRXData[5] == 0x06))
-					flag_mode = 'P';		//Phone
-			} /*else flag_mode=0;*/
-
-		}
-
-	}
 }
 
 /* USER CODE END PD */
@@ -257,14 +271,13 @@ void TIM14_IRQHandler(void)
   * @brief This function handles USART1 global interrupt / USART1 wake-up interrupt through EXTI line 25.
   */
 
-void USART1_IRQHandler(void) {
-	/* USER CODE BEGIN USART1_IRQn 0 */
-   HF_band_decode();
-   //VHF_band_decode();
-	/* USER CODE END USART1_IRQn 0 */
-	/* USER CODE BEGIN USART1_IRQn 1 */
+void USART1_IRQHandler(void)
+{
+    if (!LL_USART_IsActiveFlag_RXNE(USART1)) return;
 
-	/* USER CODE END USART1_IRQn 1 */
+    uint8_t b = LL_USART_ReceiveData8(USART1);
+    uart_rx_command_handler_byte(b);
+    HF_band_decode_byte(b);
 }
 
 /* USER CODE BEGIN 1 */

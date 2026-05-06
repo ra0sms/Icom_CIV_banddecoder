@@ -36,7 +36,9 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_cortex.h \
  ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_utils.h \
  ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_pwr.h \
- ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_dma.h
+ ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_dma.h \
+ ../Core/Inc/flash_storage.h ../Core/Inc/band_rules.h \
+ ../Core/Inc/band_rules.h
 ../Core/Inc/main.h:
 ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal.h:
 ../Core/Inc/stm32g0xx_hal_conf.h:
@@ -76,3 +78,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_utils.h:
 ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_pwr.h:
 ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_ll_dma.h:
+../Core/Inc/flash_storage.h:
+../Core/Inc/band_rules.h:
+../Core/Inc/band_rules.h:
