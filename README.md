@@ -55,6 +55,14 @@ Now available a new firmware for changing band plan. The new firmware you can do
 
 ![](pics/gui_icom_banddecoder.png)
 
+To connect to the board, use the standard ICOM transceiver CAT interface connected to the CI-V connector on the decoder board.
+
+You can adjust all bands for the corresponding output (band). You can even reassign band outputs to other bands. For example, instead of the 40m band, you can set the frequencies of the 60m band (or any other band). In this case, when you switch to the 60m band, the 40m output will automatically turn on.
+
+After adjusting the table, press the Send button. If the settings were successfully written, the decoder board's "CW/SSB" LED will blink twice.
+
+
+
 
 
 
