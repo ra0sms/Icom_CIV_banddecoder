@@ -51,7 +51,7 @@ Now available a new firmware for changing band plan. The new firmware you can do
 
 [Firmware for 19200 kb/s](code/Debug/Icom_BD_19200_gui_latest.hex)
 
-[GUI software for Windows](gui/gui/zip)
+[GUI software for Windows](gui/gui.zip)
 
 ![](pics/gui_icom_banddecoder.png)
 
