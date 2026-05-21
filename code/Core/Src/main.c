@@ -25,7 +25,7 @@
 #include "band_rules.h"
 #include <string.h>
 
-#define BAUD_RATE 9600
+#define BAUD_RATE 19200
 
 
 extern uint8_t cmd_buffer[256];
@@ -68,6 +68,13 @@ const band_rule_t band_rules_default[] = {
 
     {50000, 50200, 6, 'C'},
     {50200, 54000, 6, 'P'},
+
+	{144000, 146000, 144, 'P'},
+	{430000, 440000, 430, 'P'},
+	{1240000, 1300000, 1200, 'P'},
+	{2300000, 2450000, 2400, 'P'},
+	{5650000, 5850000, 5000, 'P'},
+	{10000000, 10500000, 10000, 'P'},
 };
 
 extern band_rule_t band_rules[];
@@ -300,6 +307,30 @@ void SetOut(void) {
 		ResetLeds();
 		ResetOuts();
 	}
+	if (flag_band == 144) {
+			SetLed(1);
+			SetBand(1);
+		}
+	if (flag_band == 430) {
+			SetLed(2);
+			SetBand(2);
+		}
+	if (flag_band == 1200) {
+			SetLed(3);
+			SetBand(3);
+		}
+	if (flag_band == 2400) {
+			SetLed(4);
+			SetBand(4);
+		}
+	if (flag_band == 5000) {
+			SetLed(5);
+			SetBand(5);
+		}
+	if (flag_band == 10000) {
+			SetLed(6);
+			SetBand(6);
+		}
 
 }
 

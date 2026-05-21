@@ -82,18 +82,26 @@ void uart_rx_command_handler_byte(uint8_t b)
     }
 }
 
-uint32_t get_frequency_khz(uint8_t *data)
-{
-    uint32_t freq = 0;
 
-    for (int i = 9; i >= 5; i--) {
+uint32_t get_frequency_khz(uint8_t *data, uint8_t len)
+{
+    uint64_t freq = 0;
+    int last = 9;
+    if (len > 11 && data[10] != 0xFD && data[10] != 0x00) {
+        last = 10;
+    }
+
+    for (int i = last; i >= 5; i--) {
+
+        if (data[i] == 0xFD)
+            break;
         uint8_t b = data[i];
         freq *= 100;
         freq += ((b >> 4) * 10) + (b & 0x0F);
     }
-
-    return freq / 1000;
+    return (uint32_t)(freq / 1000);
 }
+
 
 void decode_by_freq(uint32_t freq_khz)
 {
@@ -118,8 +126,8 @@ void HF_band_decode_byte(uint8_t letter)
     static uint8_t i = 0;
     static uint8_t TRXData[TRX_BUFFER_SIZE];
 
-    if (i == 0 && letter != 0xFE) return;
-
+    if (i == 0 && letter != 0xFE)
+        return;
     if (i == 1 && letter != 0xFE) {
         i = 0;
         return;
@@ -131,13 +139,12 @@ void HF_band_decode_byte(uint8_t letter)
         return;
     }
     if (letter == 0xFD) {
-        if (i >= 10) {
+        if (i >= 11) {
             if ((TRXData[4] == 0x00 || TRXData[4] == 0x03)) {
-                uint32_t freq_khz = get_frequency_khz(TRXData);
+                uint32_t freq_khz = get_frequency_khz(TRXData, i);
                 decode_by_freq(freq_khz);
             }
         }
-
         i = 0;
     }
 }
